@@ -136,6 +136,14 @@ def read_cache(cache_file):
 
     return cache
 
+def convBeng(num):
+	bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯']
+	ans = ''
+	if int(num) < 10: return bn[int(num)]
+	while int(num) > 0:
+		ans = bn[int(num) % 10] + ans
+		num = str(int(int(num) / 10))
+	return ans
 
 def write_cache(cache, cache_file):
     logger.debug("Writing cache: {}".format(cache_file))
@@ -143,7 +151,7 @@ def write_cache(cache, cache_file):
         json.dump(cache, f)
 
 
-def get_numpages(book):
+def get_numpages(book, api):
 
     params = {
         'action': 'query',
@@ -157,9 +165,11 @@ def get_numpages(book):
     params = urllib.parse.urlencode(params).encode('ascii')
     logger.info("\tRequest image info for file 'File:{book}'".format(book=book))
 
-    with urllib.request.urlopen(COMMONS_API, params) as f:
+    with urllib.request.urlopen(api, params) as f:
         data = json.loads(f.read().decode('utf-8'))
-        numpages = list(data['query']['pages'].values())[0]['imageinfo'][0]['pagecount']
+        try:
+            numpages = list(data['query']['pages'].values())[0]['imageinfo'][0]['pagecount']
+        except KeyError: numpages = 0
 
         return int(numpages)
 
@@ -179,7 +189,9 @@ def get_books(books_file, booklist_cache):
 
     for book in clean_lines:
         if book not in cache[booklist]:
-            end = get_numpages(book)
+            end = get_numpages(book, COMMONS_API)
+            #if end == 0:
+            #	end = get_numpages(book, WIKISOURCE_API)
             cache[booklist][book] = end
 
             write_cache(cache, booklist_cache)
@@ -207,12 +219,12 @@ def get_page_revisions(book, page, lang, enable_cache, cache_file):
         'action': 'query',
         'format': 'json',
         'prop': 'revisions',
-        'titles': 'Page:{book}/{page}'.format(book=book, page=page),
+        'titles': 'Page:{book}/{page}'.format(book=book, page=convBeng(page)),
         'rvlimit': '50',
         'rvprop': 'user|timestamp|content'
     }
     params = urllib.parse.urlencode(params).encode('ascii')
-    logger.info("\tRequest page 'Page:{book}/{page}'".format(book=book, page=page))
+    logger.info("\tRequest page 'Page:{book}/{page}'".format(book=book, page=convBeng(page)))
     with urllib.request.urlopen(WIKISOURCE_API.format(lang=lang),
                                 params) as f:
 
