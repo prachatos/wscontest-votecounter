@@ -2,7 +2,18 @@
 
 A script to count votes for the Wikisource anniversary contest.
 
-## Usage
+## Localization for Bengali
+
+Localization of page numbers - can be extended to other languages
+
+Simple usage docs - split to multiple files, run in parallel and merge:
+* $ cat books.tsv | grep -v -e "#" | sort | sed '/^$/d' > united
+* $ split -l 11 --numeric-suffixes=01 --additional-suffix="_sublist.tsv" united books
+* Install GNU Parallel
+* $ seq -w 01 04 | parallel -t --files --results output_dir $(which python3) score.py -v -f books{}_sublist.tsv -o results{}_sublist.tsv
+* $ python  merge.py results*_sublist.tsv
+
+## Detailed usage
 ```bash
 usage: score.py [-h] [--booklist-cache BOOKLIST_CACHE] [--cache CACHE_FILE]
                 [--config CONFIG_FILE] [-d] [--enable-cache] [-f BOOKS_FILE]

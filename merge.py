@@ -86,7 +86,7 @@ OUTPUT_HTML = '{OUTPUT_TSV}.index.html'
 
 
 # Globals
-CSV_FIELDS = ['user', 'punts', 'vali', 'revi']
+CSV_FIELDS = ['user', 'punts', 'vali', 'revi', 'prob', 'notext']
 ### ###
 
 ### logging ###
@@ -133,19 +133,25 @@ def get_ranking(resfiles):
                     continue
 
                 user = row['user']
-                punts = int(row['punts'])
+                punts = float(row['punts'])
                 vali = int(row['vali'])
                 revi = int(row['revi'])
+                prob = int(row['prob'])
+                notext = int(row['notext'])
 
                 if user not in ranking:
                     ranking[user] = {'punts': 0,
                                      'vali': 0,
-                                     'revi': 0
+                                     'revi': 0,
+                                     'prob': 0,
+                                     'notext': 0
                                      }
 
                 ranking[user]['punts'] += punts
                 ranking[user]['vali'] += vali
                 ranking[user]['revi'] += revi
+                ranking[user]['prob'] += prob
+                ranking[user]['notext'] += notext
 
     return ranking
 
@@ -159,12 +165,16 @@ def get_rows(ranking):
     return [(user,
              ranking[user]['punts'],
              ranking[user]['vali'],
-             ranking[user]['revi']
+             ranking[user]['revi'],
+             ranking[user]['prob'],
+             ranking[user]['notext']
              )
             for user in sorted(sorted(ranking.keys()),
                                key=lambda u: (ranking[u]['punts'],
                                               ranking[u]['revi'],
-                                              ranking[u]['vali']),
+                                              ranking[u]['vali'],
+                                              ranking[u]['prob'],
+                                              ranking[u]['notext']),
                                reverse=True)]
 
 
